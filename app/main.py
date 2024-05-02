@@ -16,7 +16,7 @@ def main():
     (connection, address) = server_socket.accept()  # wait for client
     print(f'Connection stablished with {address[0]}:{address[1]}{os.linesep}')
 
-    # Recieve the request
+    # Receive the request
     request = connection.recv(1024).decode('utf-8')
 
     # Parse the request
@@ -30,7 +30,7 @@ def main():
     if request_target == '/':
         status_line = 'HTTP/1.1 200 OK'
     else:
-        status_line = 'HTTP/1.1 400 Not Found'
+        status_line = 'HTTP/1.1 404 Not Found'
     response = f'{status_line}{CRLF}{CRLF}'
 
     connection.send(response.encode('utf-8'))
