@@ -65,11 +65,11 @@ def main():
     # Construct the response
     if http_request.request_target.startswith('/echo/'):
         body = http_request.request_target.removeprefix('/echo/')
+        content_type_header = 'Content-Type: text/plain'
+        content_length = f'Content-Length: {len(body)}'
+        http_response = HttpResponse('HTTP/1.1', ResponseStatus.OK, [content_type_header, content_length], body)
     else:
-        body = ''
-    content_type_header = 'Content-Type: text/plain'
-    content_length = f'Content-Length: {len(body)}'
-    http_response = HttpResponse('HTTP/1.1', ResponseStatus.OK, [content_type_header, content_length], body)
+        http_response = HttpResponse('HTTP/1.1', ResponseStatus.NOT_FOUND, [], '')
 
     # Send response
     connection.send(http_response.to_string().encode('utf-8'))
