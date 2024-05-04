@@ -47,7 +47,7 @@ class HttpResponse:
 
     def to_string(self):
         status_line = f'{self.http_version} {self.response_status.status_code} {self.response_status.status_text}'
-        return CRLF.join([status_line, CRLF.join(self.headers), CRLF, self.body])
+        return CRLF.join([status_line, CRLF.join(self.headers), '', self.body])
 
 
 def main():
