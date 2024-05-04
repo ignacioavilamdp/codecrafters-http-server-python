@@ -68,6 +68,8 @@ def main():
         content_type_header = 'Content-Type: text/plain'
         content_length = f'Content-Length: {len(body)}'
         http_response = HttpResponse('HTTP/1.1', ResponseStatus.OK, [content_type_header, content_length], body)
+    elif http_request.request_target == '/':
+        http_response = HttpResponse('HTTP/1.1', ResponseStatus.OK, [], '')
     else:
         http_response = HttpResponse('HTTP/1.1', ResponseStatus.NOT_FOUND, [], '')
 
