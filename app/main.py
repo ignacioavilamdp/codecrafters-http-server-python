@@ -1,11 +1,53 @@
-# Uncomment this to pass the first stage
 import os
 import socket
+import string
+from enum import Enum
 
 CRLF = '\r\n'
 
 HOST = "localhost"
 PORT = 4221
+
+
+class ResponseStatus(Enum):
+
+    OK = (200, 'OK')
+    BAD_REQUEST = (400, 'Bad Request')
+    UNAUTHORIZED = (401, 'Unauthorized')
+    FORBIDDEN = (403, 'Forbidden')
+    NOT_FOUND = (404, 'Not found')
+
+    def __init__(self, status_code, status_text):
+        self.status_code = status_code
+        self.status_text = status_text
+
+
+class HttpRequest:
+
+    def __init__(self, http_method, request_target, http_version, headers, body):
+        self.http_method = http_method
+        self.request_target = request_target
+        self.http_version = http_version
+        self.headers = headers
+        self.body = body
+
+    @staticmethod
+    def from_string(request_string):
+        request_line, *headers, empty_line, body = request_string.split(CRLF)
+        http_method, request_target, http_version = request_line.split(' ')
+        return HttpRequest(http_method, request_target, http_version, headers, body)
+
+
+class HttpResponse:
+    def __init__(self, http_version, response_status: ResponseStatus, headers, body):
+        self.http_version = http_version
+        self.response_status = response_status
+        self.headers = headers
+        self.body = body
+
+    def to_string(self):
+        status_line = f'{self.http_version} {self.response_status.status_code} {self.response_status.status_text}'
+        return CRLF.join([status_line, CRLF.join(self.headers), CRLF, self.body])
 
 
 def main():
@@ -16,31 +58,28 @@ def main():
     (connection, address) = server_socket.accept()  # wait for client
     print(f'Connection stablished with {address[0]}:{address[1]}{os.linesep}')
 
-    # Receive the request
-    request = connection.recv(1024).decode('utf-8')
+    # Receive and process the request
+    request_string = connection.recv(1024).decode('utf-8')
+    http_request = HttpRequest.from_string(request_string)
 
-    # Parse the request
-    request_line = request.split(CRLF)[0]
-    request_line_elements = request_line.split(' ')
-    http_method = request_line_elements[0]
-    request_target = request_line_elements[1]
-    http_version = request_line_elements[2]
-
-    # Response
-    if request_target == '/':
-        status_line = 'HTTP/1.1 200 OK'
+    # Construct the response
+    if http_request.request_target.startswith('/echo/'):
+        body = http_request.request_target.removeprefix('/echo/')
     else:
-        status_line = 'HTTP/1.1 404 Not Found'
-    response = f'{status_line}{CRLF}{CRLF}'
+        body = ''
+    content_type_header = 'Content-Type: text/plain'
+    content_length = f'Content-Length: {len(body)}'
+    http_response = HttpResponse('HTTP/1.1', ResponseStatus.OK, [content_type_header, content_length], body)
 
-    connection.send(response.encode('utf-8'))
+    # Send response
+    connection.send(http_response.to_string().encode('utf-8'))
 
     # Debugging
-    print(f'Request line - http_method: {http_method}')
-    print(f'Request line - request_target: {request_target}')
-    print(f'Request line - http_version: {http_version}')
-    print(f'Complete request: {os.linesep}{request}')
-    print(f'Response: {os.linesep}{response}')
+    print(f'Request line - http_method: {http_request.http_method}')
+    print(f'Request line - request_target: {http_request.request_target}')
+    print(f'Request line - http_version: {http_request.http_version}{os.linesep}')
+    print(f'Complete request: {os.linesep}{request_string}')
+    print(f'Response: {os.linesep}{http_response.to_string()}')
 
 
 if __name__ == "__main__":
