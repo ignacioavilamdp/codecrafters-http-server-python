@@ -13,10 +13,8 @@ class Server(ABC):
         self.args = args
 
     def run(self):
-        # Creates a server socket, binds it to host and port and accept connections (using socket.create_server() is easier)
-        with socket.socket() as server_socket:
-            server_socket.bind((self.host, self.port))
-            server_socket.listen()
+        # Creates the server socket
+        with socket.create_server((self.host, self.port), reuse_port=False) as server_socket:
             print(f"Server running and accepting connections at {self.host}:{self.port}{os.linesep}")
 
             # Main loop for incoming connections
