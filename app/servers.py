@@ -2,7 +2,7 @@ import os
 import socket
 import concurrent.futures
 from abc import ABC, abstractmethod
-from app.http_utils import HttpVersion, HttpRequest, HttpResponse, HttpResponseStatus
+from app.http_utils import HttpVersion, HttpRequest, HttpResponse, HttpResponseStatus, HttpMethod
 
 
 class Server(ABC):
@@ -36,69 +36,76 @@ class HttpServer(Server):
 
         with connection_socket:
             # Fetch data and create the HttpRequest
-            data = connection_socket.recv(1024)
-            http_request = HttpRequest.from_bytes(data)
+            data = connection_socket.recv(1024*1000*5)
+            request = HttpRequest.from_bytes(data)
 
             # Construct the response
-            if http_request.request_target.startswith('/echo/'):
+            if request.target.startswith('/echo/'):
 
-                http_response_status = HttpResponseStatus.OK
-                body_string = http_request.request_target.removeprefix('/echo/')
-                body = body_string.encode('utf-8')
-                headers = {'Content-Type': 'text/plain', 'Content-Length': str(len(body_string))}
+                response_status = HttpResponseStatus.OK
+                body_string = request.target.removeprefix('/echo/')
+                response_body = body_string.encode('utf-8')
+                response_headers = {'Content-Type': 'text/plain', 'Content-Length': str(len(body_string))}
 
-            elif http_request.request_target == '/user-agent':
+            elif request.target == '/user-agent':
 
-                http_response_status = HttpResponseStatus.OK
-                body_string = http_request.headers['User-Agent']
-                body = body_string.encode('utf-8')
-                headers = {'Content-Type': 'text/plain', 'Content-Length': str(len(body_string))}
+                response_status = HttpResponseStatus.OK
+                body_string = request.headers['User-Agent']
+                response_body = body_string.encode('utf-8')
+                response_headers = {'Content-Type': 'text/plain', 'Content-Length': str(len(body_string))}
 
-            elif http_request.request_target.startswith('/files/'):
+            elif request.method == HttpMethod.GET and request.target.startswith('/files/'):
 
-                file_name = http_request.request_target.removeprefix('/files/')
-
-                option = self.args[1]
-                directory_path = self.args[2]
-                file_path = os.path.join(directory_path, file_name)
-
-                print(file_path)
+                file_name = request.target.removeprefix('/files/')
+                file_path = os.path.join(self.args[2], file_name)
 
                 if os.path.exists(file_path):
                     with open(file_path, 'rb') as f:
                         data = f.read()
 
-                    http_response_status = HttpResponseStatus.OK
-                    body = data
-                    headers = {'Content-Type': 'application/octet-stream',
-                               'Content-Length': str(len(body))} #, 'Content-Length': str(len(body))}
+                    response_status = HttpResponseStatus.OK
+                    response_body = data
+                    response_headers = {'Content-Type': 'application/octet-stream',
+                                        'Content-Length': str(len(response_body))}
 
                 else:
-                    http_response_status = HttpResponseStatus.NOT_FOUND
-                    headers = {}
-                    body = b''
+                    response_status = HttpResponseStatus.NOT_FOUND
+                    response_headers = {}
+                    response_body = b''
 
-            elif http_request.request_target == '/':
-                http_response_status = HttpResponseStatus.OK
-                headers = {}
-                body = b''
+            elif request.method == HttpMethod.POST and request.target.startswith('/files/'):
+
+                file_name = request.target.removeprefix('/files/')
+                file_path = os.path.join(self.args[2], file_name)
+
+                with open(file_path, 'wb') as f:
+                    f.write(request.body)
+
+                response_status = HttpResponseStatus.CREATED
+                response_headers = {}
+                response_body = b''
+
+            elif request.target == '/':
+                response_status = HttpResponseStatus.OK
+                response_headers = {}
+                response_body = b''
 
             else:
-                http_response_status = HttpResponseStatus.NOT_FOUND
-                headers = {}
-                body = b''
+                response_status = HttpResponseStatus.NOT_FOUND
+                response_headers = {}
+                response_body = b''
 
-            http_response = HttpResponse(HttpVersion.HTTP11, http_response_status, headers, body)
+            response = HttpResponse(HttpVersion.HTTP11, response_status, response_headers, response_body)
 
             # To simulate a delay
             # time.sleep(5)
 
             # Send response
-            connection_socket.send(http_response.to_bytes())
+            connection_socket.send(response.to_bytes())
 
             # Debugging
-            print(f'Request line - http_method: {http_request.http_method}')
-            print(f'Request line - request_target: {http_request.request_target}')
-            print(f'Request line - http_version: {http_request.http_version}{os.linesep}')
-            print(f'Complete request: {os.linesep}{http_request}')
-            print(f'Response: {os.linesep}{http_response}')
+            print(f'Request line - http_method: {request.method}')
+            print(f'Request line - request_target: {request.target}')
+            print(f'Request line - http_version: {request.version}{os.linesep}')
+            print(f'Complete request: {os.linesep}{request}')
+            print(f'Response: {os.linesep}{response}')
