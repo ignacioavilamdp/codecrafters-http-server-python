@@ -10,7 +10,8 @@ def main():
     server = HttpServer(HOST, PORT, sys.argv)
 
     try:
-        print(f'Directory argument: {sys.argv[2]}')
+        if len(sys.argv) >= 3:
+            print(f'Directory argument: {sys.argv[2]}')
         # for arg in sys.argv:
         #     print(arg)
         server.run()
