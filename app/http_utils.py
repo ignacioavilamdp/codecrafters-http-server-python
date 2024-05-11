@@ -25,7 +25,7 @@ class HttpResponseStatus(Enum):
     BAD_REQUEST = (400, 'Bad Request')
     UNAUTHORIZED = (401, 'Unauthorized')
     FORBIDDEN = (403, 'Forbidden')
-    NOT_FOUND = (404, 'Not found')
+    NOT_FOUND = (404, 'Not Found')
 
     def __init__(self, status_code, status_text):
         self.status_code = status_code
