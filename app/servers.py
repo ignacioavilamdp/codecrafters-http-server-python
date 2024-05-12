@@ -7,10 +7,9 @@ from app.http_utils import HttpVersion, HttpRequest, HttpResponse, HttpResponseS
 
 class Server(ABC):
 
-    def __init__(self, host, port, args):
+    def __init__(self, host, port):
         self.host = host
         self.port = port
-        self.args = args
 
     def run(self):
         # Creates the server socket
@@ -31,6 +30,10 @@ class Server(ABC):
 
 
 class HttpServer(Server):
+
+    def __init__(self, host, port, resource_directory):
+        super().__init__(host, port)
+        self.resource_directory = resource_directory
 
     def handle_connection(self, connection_socket: socket):
 
@@ -57,7 +60,7 @@ class HttpServer(Server):
             elif request.method == HttpMethod.GET and request.target.startswith('/files/'):
 
                 file_name = request.target.removeprefix('/files/')
-                file_path = os.path.join(self.args[2], file_name)
+                file_path = os.path.join(self.resource_directory, file_name)
 
                 if os.path.exists(file_path):
                     with open(file_path, 'rb') as f:
@@ -76,7 +79,7 @@ class HttpServer(Server):
             elif request.method == HttpMethod.POST and request.target.startswith('/files/'):
 
                 file_name = request.target.removeprefix('/files/')
-                file_path = os.path.join(self.args[2], file_name)
+                file_path = os.path.join(self.resource_directory, file_name)
 
                 with open(file_path, 'wb') as f:
                     f.write(request.body)
@@ -102,10 +105,3 @@ class HttpServer(Server):
 
             # Send response
             connection_socket.send(response.to_bytes())
-
-            # Debugging
-            print(f'Request line - http_method: {request.method}')
-            print(f'Request line - request_target: {request.target}')
-            print(f'Request line - http_version: {request.version}{os.linesep}')
-            print(f'Complete request: {os.linesep}{request}')
-            print(f'Response: {os.linesep}{response}')
