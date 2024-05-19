@@ -1,9 +1,6 @@
 import sys
 
-from app.servers import HttpServer
-
-HOST = "localhost"
-PORT = 4221
+from app.application import app
 
 
 def main():
@@ -20,9 +17,9 @@ def main():
         print('Server configured without a resources directory')
         print('To add a resources directory use: --directory <directory>')
 
-    server = HttpServer(HOST, PORT, resources_directory)
     try:
-        server.run()
+        app.resource_directory = resources_directory
+        app.run()
     except KeyboardInterrupt:
         print('Server stopped with keyboard interrupt')
 
