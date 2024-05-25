@@ -4,6 +4,7 @@ from alicante.http import HttpRequest, HttpResponse, HttpVersion, HttpResponseSt
 
 HOST = "localhost"
 PORT = 4221
+ACCEPTED_ENCODINGS = ['some_rare_encoding', 'gzip']
 
 app = AlicanteServer(HOST, PORT)
 
@@ -20,9 +21,10 @@ def get_echo(request: HttpRequest, to_echo: str) -> HttpResponse:
                         'Content-Length': str(len(to_echo))}
 
     if 'Accept-Encoding' in request.headers:
-        accept_encoding = request.headers['Accept-Encoding']
-        if accept_encoding == 'gzip':
-            response_headers['Content-Encoding'] = accept_encoding
+        request_accept_encodings = [e.strip() for e in request.headers['Accept-Encoding'].split(',')]
+        matched_encodings = [e for e in request_accept_encodings if e in ACCEPTED_ENCODINGS]
+        if matched_encodings:
+            response_headers['Content-Encoding'] = ', '.join(matched_encodings)
 
     return HttpResponse(HttpVersion.HTTP11, HttpResponseStatus.OK, response_headers, response_body)
 
