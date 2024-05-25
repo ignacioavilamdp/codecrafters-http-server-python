@@ -58,8 +58,8 @@ class AlicanteServer(Server):
     def handle_request(self, request: HttpRequest) -> HttpResponse:
 
         for route_handler in self.route_handlers:
-            kwargs = route_handler.match(request)
-            if kwargs:
+            found, kwargs = route_handler.match(request)
+            if found:
                 return route_handler.handler(request, **kwargs)
 
         return self.default_handler()
