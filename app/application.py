@@ -21,16 +21,14 @@ def get_echo(request: HttpRequest, to_echo: str) -> HttpResponse:
     request_accept_encodings = [e.strip() for e in request.headers.get('Accept-Encoding', '').split(',')]
 
     if 'gzip' in request_accept_encodings:
-        compressed_bytes = gzip.compress(to_echo.encode('utf-8'))
-        compressed_bytes_as_string = compressed_bytes.hex()
-        response_body = compressed_bytes_as_string.encode('utf-8')
+        response_body = gzip.compress(to_echo.encode('utf-8'))
         response_headers = {'Content-Encoding': 'gzip',
                             'Content-Type': 'text/plain',
-                            'Content-Length': str(len(compressed_bytes))}
+                            'Content-Length': str(len(response_body))}
     else:
         response_body = to_echo.encode('utf-8')
         response_headers = {'Content-Type': 'text/plain',
-                            'Content-Length': str(len(to_echo))}
+                            'Content-Length': str(len(response_body))}
 
     return HttpResponse(HttpVersion.HTTP11, HttpResponseStatus.OK, response_headers, response_body)
 
