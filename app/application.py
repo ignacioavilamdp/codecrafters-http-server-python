@@ -1,10 +1,11 @@
 import os
+import gzip
+
 from alicante.servers import AlicanteServer
 from alicante.http import HttpRequest, HttpResponse, HttpVersion, HttpResponseStatus, HttpMethod
 
 HOST = "localhost"
 PORT = 4221
-ACCEPTED_ENCODINGS = ['some_rare_encoding', 'gzip']
 
 app = AlicanteServer(HOST, PORT)
 
@@ -16,15 +17,20 @@ def get_home(request: HttpRequest) -> HttpResponse:
 
 @app.route('/echo/<to_echo>', HttpMethod.GET)
 def get_echo(request: HttpRequest, to_echo: str) -> HttpResponse:
-    response_body = to_echo.encode('utf-8')
-    response_headers = {'Content-Type': 'text/plain',
-                        'Content-Length': str(len(to_echo))}
 
-    if 'Accept-Encoding' in request.headers:
-        request_accept_encodings = [e.strip() for e in request.headers['Accept-Encoding'].split(',')]
-        matched_encodings = [e for e in request_accept_encodings if e in ACCEPTED_ENCODINGS]
-        if matched_encodings:
-            response_headers['Content-Encoding'] = ', '.join(matched_encodings)
+    request_accept_encodings = [e.strip() for e in request.headers.get('Accept-Encoding', '').split(',')]
+
+    if 'gzip' in request_accept_encodings:
+        compressed_bytes = gzip.compress(to_echo.encode('utf-8'))
+        compressed_bytes_as_string = compressed_bytes.hex()
+        response_body = compressed_bytes_as_string.encode('utf-8')
+        response_headers = {'Content-Encoding': 'gzip',
+                            'Content-Type': 'text/plain',
+                            'Content-Length': str(len(compressed_bytes))}
+    else:
+        response_body = to_echo.encode('utf-8')
+        response_headers = {'Content-Type': 'text/plain',
+                            'Content-Length': str(len(to_echo))}
 
     return HttpResponse(HttpVersion.HTTP11, HttpResponseStatus.OK, response_headers, response_body)
 

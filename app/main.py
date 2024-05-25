@@ -1,24 +1,21 @@
-import sys
+import argparse
 
 from app.application import app
 
 
 def main():
 
-    if len(sys.argv) > 1:
-        if len(sys.argv) != 3 or sys.argv[1] != '--directory':
-            print('Arguments error')
-            print('Usage: --directory <directory>')
-            return
-        resources_directory = sys.argv[2]
-        print(f'Server resources directory: {resources_directory}')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--directory', help='server resources directory absolute path')
+
+    args = parser.parse_args()
+    if args.directory:
+        print(f'Server resources directory: {args.directory}')
+        app.resource_directory = args.directory
     else:
-        resources_directory = None
         print('Server configured without a resources directory')
-        print('To add a resources directory use: --directory <directory>')
 
     try:
-        app.resource_directory = resources_directory
         app.run()
     except KeyboardInterrupt:
         print('Server stopped with keyboard interrupt')
