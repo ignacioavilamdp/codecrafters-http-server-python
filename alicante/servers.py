@@ -76,4 +76,4 @@ class AlicanteServer(Server):
         self.route_handlers.add(route_handler)
 
     def default_handler(self) -> HttpResponse:
-        return HttpResponse(HttpVersion.HTTP11, HttpResponseStatus.NOT_FOUND, {}, b'')
+        return HttpResponse(HttpResponseStatus.NOT_FOUND, {}, b'', HttpVersion.HTTP11)

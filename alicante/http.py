@@ -51,12 +51,12 @@ class HttpResponseStatus(Enum):
 
 class HttpRequest:
 
-    def __init__(self, method: HttpMethod, target: str, version: HttpVersion, headers: dict[str, str], body: bytes):
+    def __init__(self, method: HttpMethod, target: str, headers: dict[str, str], body: bytes, version=HttpVersion.HTTP11):
         self.method = method
         self.target = target
-        self.version = version
         self.headers = headers
         self.body = body
+        self.version = version
 
     def __str__(self):
         request_line = f'{self.method.value} {self.target} {self.version.value}'
@@ -74,15 +74,15 @@ class HttpRequest:
             key, sep, value = header.partition(':')
             headers[key] = value.strip()
 
-        return HttpRequest(HttpMethod(method_name), target, HttpVersion(version_name), headers, body)
+        return HttpRequest(HttpMethod(method_name), target, headers, body, HttpVersion(version_name))
 
 
 class HttpResponse:
-    def __init__(self, version: HttpVersion, status: HttpResponseStatus, headers: dict[str, str], body: bytes):
-        self.version = version
+    def __init__(self, status: HttpResponseStatus, headers: dict[str, str], body: bytes, version=HttpVersion.HTTP11):
         self.status = status
         self.headers = headers
         self.body = body
+        self.version = version
 
     def __str__(self):
         status_line = f'{self.version.value} {self.status.code} {self.status.text}'
