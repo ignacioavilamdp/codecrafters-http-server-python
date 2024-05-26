@@ -7,7 +7,14 @@ from alicante.http import HttpRequest, HttpResponse, HttpVersion, HttpResponseSt
 HOST = "localhost"
 PORT = 4221
 
-app = AlicanteServer(HOST, PORT)
+
+class CodeCraftersServer(AlicanteServer):
+    def __init__(self, host, port, resources_directory):
+        super().__init__(host, port)
+        self.resource_directory = resources_directory
+
+
+app = CodeCraftersServer(HOST, PORT, None)
 
 
 @app.route('/', HttpMethod.GET)
@@ -17,7 +24,6 @@ def get_home(request: HttpRequest) -> HttpResponse:
 
 @app.route('/echo/<to_echo>', HttpMethod.GET)
 def get_echo(request: HttpRequest, to_echo: str) -> HttpResponse:
-
     request_accept_encodings = [e.strip() for e in request.headers.get('Accept-Encoding', '').split(',')]
 
     if 'gzip' in request_accept_encodings:
@@ -35,7 +41,6 @@ def get_echo(request: HttpRequest, to_echo: str) -> HttpResponse:
 
 @app.route('/user-agent', HttpMethod.GET)
 def get_user_agent(request: HttpRequest) -> HttpResponse:
-
     user_agent = request.headers['User-Agent']
     response_body = user_agent.encode('utf-8')
     response_headers = {'Content-Type': 'text/plain',

@@ -1,5 +1,4 @@
 import os
-import re
 import socket
 import concurrent.futures
 from typing import Callable
@@ -37,7 +36,6 @@ class AlicanteServer(Server):
     def __init__(self, host, port):
         super().__init__(host, port)
         self.route_handlers = set()
-        self.resource_directory = None
 
     def handle_connection(self, connection_socket: socket):
 

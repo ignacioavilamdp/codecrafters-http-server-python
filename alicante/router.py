@@ -29,5 +29,3 @@ class RouteHandler:
         var_names = tokens[1::2]
         tokens[1::2] = [rf'(?P<{name}>\S*)' for name in var_names]
         return ''.join(tokens)
-
-
