@@ -41,7 +41,7 @@ def get_echo(request: HttpRequest, to_echo: str) -> HttpResponse:
 
 @app.route('/user-agent', HttpMethod.GET)
 def get_user_agent(request: HttpRequest) -> HttpResponse:
-    user_agent = request.headers['User-Agent']
+    user_agent = request.headers.get('User-Agent', '')
     response_body = user_agent.encode('utf-8')
     response_headers = {'Content-Type': 'text/plain',
                         'Content-Length': str(len(user_agent))}
