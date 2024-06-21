@@ -19,7 +19,7 @@ app = CodeCraftersServer(HOST, PORT, None)
 
 @app.route('/', HttpMethod.GET)
 def get_home(request: HttpRequest) -> HttpResponse:
-    return HttpResponse(HttpResponseStatus.OK, {}, b'')
+    return HttpResponse(HttpResponseStatus.OK, b'')
 
 
 @app.route('/echo/<to_echo>', HttpMethod.GET)
@@ -36,7 +36,7 @@ def get_echo(request: HttpRequest, to_echo: str) -> HttpResponse:
         response_headers = {'Content-Type': 'text/plain',
                             'Content-Length': str(len(response_body))}
 
-    return HttpResponse(HttpResponseStatus.OK, response_headers, response_body)
+    return HttpResponse(HttpResponseStatus.OK, response_body, response_headers)
 
 
 @app.route('/user-agent', HttpMethod.GET)
@@ -46,7 +46,7 @@ def get_user_agent(request: HttpRequest) -> HttpResponse:
     response_headers = {'Content-Type': 'text/plain',
                         'Content-Length': str(len(user_agent))}
 
-    return HttpResponse(HttpResponseStatus.OK, response_headers, response_body)
+    return HttpResponse(HttpResponseStatus.OK, response_body, response_headers)
 
 
 @app.route('/files/<file_name>', HttpMethod.GET)
@@ -66,7 +66,7 @@ def get_file(request: HttpRequest, file_name: str) -> HttpResponse:
         response_headers = {}
         response_body = b''
 
-    return HttpResponse(response_status, response_headers, response_body)
+    return HttpResponse(response_status, response_body, response_headers)
 
 
 @app.route('/files/<file_name>', HttpMethod.POST)
@@ -76,7 +76,7 @@ def post_file(request: HttpRequest, file_name: str) -> HttpResponse:
     with open(file_path, 'wb') as f:
         f.write(request.body)
 
-    return HttpResponse(HttpResponseStatus.CREATED, {}, b'')
+    return HttpResponse(HttpResponseStatus.CREATED, b'')
 
 
 def main():

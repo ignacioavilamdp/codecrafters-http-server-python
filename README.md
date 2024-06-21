@@ -22,48 +22,48 @@ endpoint handlers and decorate them accordingly. Keyword parameters are accepted
 ```python
 # application.py
 from alicante.servers import AlicanteServer
-from alicante.http import HttpRequest, HttpResponse, HttpMethod, HttpResponseStatus
+from alicante.http import HttpResponse, HttpMethod, HttpResponseStatus
 
 app = AlicanteServer('localhost', 4221)
 
 
 @app.route('/', HttpMethod.GET)
-def get_home(request: HttpRequest) -> HttpResponse:
-    return HttpResponse(HttpResponseStatus.OK, {}, b'Hi, this is the home page')
+def get_home(request):
+    return HttpResponse(HttpResponseStatus.OK, b'Hi, this is the home page')
 
 
 @app.route('/', HttpMethod.POST)
-def get_home(request: HttpRequest) -> HttpResponse:
-    return HttpResponse(HttpResponseStatus.METHOD_NOT_ALLOWED, {}, b'What are you doing?')
+def get_home(request):
+    return HttpResponse(HttpResponseStatus.METHOD_NOT_ALLOWED, b'What are you doing?')
 
 
 @app.route('/about', HttpMethod.GET)
-def get_home(request: HttpRequest) -> HttpResponse:
-    return HttpResponse(HttpResponseStatus.OK, {}, b'This is an AlicanteServer running')
+def get_home(request):
+    return HttpResponse(HttpResponseStatus.OK, b'This is an AlicanteServer running')
 
 
 @app.route('/echo/<to_echo>', HttpMethod.GET)
-def get_echo(request: HttpRequest, to_echo: str) -> HttpResponse:
+def get_echo(request, to_echo):
     response_body = f'You said: {to_echo}'.encode('utf-8')
     response_headers = {'Content-Type': 'text/plain',
                         'Content-Length': str(len(response_body))}
 
-    return HttpResponse(HttpResponseStatus.OK, response_headers, response_body)
+    return HttpResponse(HttpResponseStatus.OK, response_body, response_headers)
 
 
 @app.route('/user-agent', HttpMethod.GET)
-def get_user_agent(request: HttpRequest) -> HttpResponse:
-    user_agent = request.headers.get('User-Agent', '')
+def get_user_agent(request):
+    user_agent = request.headers['User-Agent']
     response_body = user_agent.encode('utf-8')
     response_headers = {'Content-Type': 'text/plain',
                         'Content-Length': str(len(user_agent))}
 
-    return HttpResponse(HttpResponseStatus.OK, response_headers, response_body)
+    return HttpResponse(HttpResponseStatus.OK, response_body, response_headers)
 
 
 @app.route('/gogogo', HttpMethod.GET)
-def get_user_agent(request: HttpRequest) -> HttpResponse:
-    return HttpResponse(HttpResponseStatus.NOT_FOUND, {}, b'Where are you trying to go?')
+def get_user_agent(request):
+    return HttpResponse(HttpResponseStatus.NOT_FOUND, b'Where are you trying to go?')
 
 
 def main():

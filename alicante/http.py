@@ -51,7 +51,9 @@ class HttpResponseStatus(Enum):
 
 class HttpRequest:
 
-    def __init__(self, method: HttpMethod, target: str, headers: dict[str, str], body: bytes, version=HttpVersion.HTTP11):
+    def __init__(self, method: HttpMethod, target: str, body: bytes, headers: dict[str, str]=None, version=HttpVersion.HTTP11):
+        if headers is None:
+            headers = {}
         self.method = method
         self.target = target
         self.headers = headers
@@ -74,11 +76,13 @@ class HttpRequest:
             key, sep, value = header.partition(':')
             headers[key] = value.strip()
 
-        return HttpRequest(HttpMethod(method_name), target, headers, body, HttpVersion(version_name))
+        return HttpRequest(HttpMethod(method_name), target, body, headers, HttpVersion(version_name))
 
 
 class HttpResponse:
-    def __init__(self, status: HttpResponseStatus, headers: dict[str, str], body: bytes, version=HttpVersion.HTTP11):
+    def __init__(self, status: HttpResponseStatus, body: bytes, headers: dict[str, str]=None, version=HttpVersion.HTTP11):
+        if headers is None:
+            headers = {}
         self.status = status
         self.headers = headers
         self.body = body
